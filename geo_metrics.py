@@ -1,6 +1,7 @@
 import numpy as np
 import math
 import re
+from typing import List, Dict, Tuple, Optional
 
 class GEOMetrics:
     def __init__(self, lambda_decay=10):
@@ -11,6 +12,23 @@ class GEOMetrics:
             lambda_decay (int): Konum ağırlıklı metrik için bozulma faktörü
         """
         self.lambda_decay = lambda_decay
+        
+        # Otoriter dil kalıpları
+        self.authority_patterns = [
+            r"araştırmalar gösteriyor",
+            r"çalışmalar kanıtlıyor",
+            r"uzmanlar belirtiyor",
+            r"bilimsel veriler",
+            r"istatistikler gösteriyor"
+        ]
+        
+        # İstatistik kalıpları
+        self.statistic_patterns = [
+            r"\d+%",
+            r"\d+ (kişi|kullanıcı|insan)",
+            r"\d+\.\d+",
+            r"\d+ (milyon|milyar)"
+        ]
     
     def split_into_sentences(self, text: str) -> list:
         """
@@ -84,6 +102,68 @@ class GEOMetrics:
             
         return weighted_sum / total_words
     
+    def analyze_authority_language(self, text: str) -> Dict[str, float]:
+        """
+        Metindeki otoriter dil kullanımını analiz eder.
+        
+        Returns:
+            Dict[str, float]: Otoriter dil skoru ve bulunan kalıplar
+        """
+        authority_score = 0
+        found_patterns = []
+        
+        for pattern in self.authority_patterns:
+            matches = re.finditer(pattern, text.lower())
+            for match in matches:
+                authority_score += 1
+                found_patterns.append(match.group())
+                
+        return {
+            "authority_score": authority_score,
+            "found_patterns": found_patterns
+        }
+    
+    def analyze_statistics(self, text: str) -> Dict[str, float]:
+        """
+        Metindeki istatistik kullanımını analiz eder.
+        
+        Returns:
+            Dict[str, float]: İstatistik skoru ve bulunan istatistikler
+        """
+        stats_score = 0
+        found_stats = []
+        
+        for pattern in self.statistic_patterns:
+            matches = re.finditer(pattern, text)
+            for match in matches:
+                stats_score += 1
+                found_stats.append(match.group())
+                
+        return {
+            "statistics_score": stats_score,
+            "found_statistics": found_stats
+        }
+    
+    def calculate_subjective_impression(self, text: str) -> float:
+        """
+        Metnin öznel etki skorunu hesaplar.
+        
+        Returns:
+            float: 0-1 arası öznel etki skoru
+        """
+        authority_analysis = self.analyze_authority_language(text)
+        stats_analysis = self.analyze_statistics(text)
+        
+        # Öznel etki skorunu hesapla
+        authority_weight = 0.4
+        stats_weight = 0.6
+        
+        authority_normalized = min(authority_analysis["authority_score"] / 5, 1.0)
+        stats_normalized = min(stats_analysis["statistics_score"] / 5, 1.0)
+        
+        return (authority_weight * authority_normalized + 
+                stats_weight * stats_normalized)
+    
     def calculate_metrics(self, source_text: str, response_text: str) -> dict:
         """
         Verilen kaynak ve yanıt metni için tüm metrikleri hesapla
@@ -93,35 +173,42 @@ class GEOMetrics:
             response_text (str): UE yanıt metni
             
         Returns:
-            dict: Hesaplanan metrikler
+            dict: Hesaplanan tüm metrikler
         """
-        # Metinleri cümlelere böl
+        # Temel metrikler
         source_sentences = self.split_into_sentences(source_text)
         response_sentences = self.split_into_sentences(response_text)
         
-        # Toplam kelime sayıları
         source_words = len(source_text.split())
         total_words = len(response_text.split())
         
-        # Kaynak cümlelerin pozisyonlarını bul
         sentence_positions = self.find_source_positions(source_sentences, response_sentences)
         
-        # Metrikleri hesapla
         wc_metric = self.word_count_metric(source_words, total_words)
         pos_metric = self.position_adjusted_metric(sentence_positions, total_words)
+        
+        # Gelişmiş analizler
+        authority_analysis = self.analyze_authority_language(response_text)
+        stats_analysis = self.analyze_statistics(response_text)
+        subjective_score = self.calculate_subjective_impression(response_text)
         
         return {
             "word_count_metric": wc_metric,
             "position_adjusted_metric": pos_metric,
-            "source_positions": sentence_positions  # Debug için pozisyon bilgisi
+            "source_positions": sentence_positions,
+            "authority_analysis": authority_analysis,
+            "statistics_analysis": stats_analysis,
+            "subjective_impression_score": subjective_score
         }
 
 # Örnek kullanım
 if __name__ == "__main__":
     geo = GEOMetrics()
     
-    kaynak = "Bu önemli bir kaynak metindir. İkinci cümle de önemlidir!"
-    yanit = "Bu önemli bir kaynak metindir. Başka bilgiler var. İkinci cümle de önemlidir!"
+    kaynak = "Yapay zeka çok önemlidir. Gelecekte her yerde olacak."
+    yanit = """Araştırmalar gösteriyor ki yapay zeka çok önemlidir. 
+              İstatistikler gösteriyor ki 2023'te yapay zeka kullanımı 45% arttı. 
+              Uzmanlar belirtiyor ki gelecekte 2.5 milyar insan yapay zeka kullanacak."""
     
     sonuclar = geo.calculate_metrics(kaynak, yanit)
     print("Metrik Sonuçları:", sonuclar) 
