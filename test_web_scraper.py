@@ -1,8 +1,12 @@
 from web_scraper import WebScraper
+from sitemap_generator import SitemapGenerator
+from schema_analyzer import SchemaAnalyzer
+from seo_analyzer import SEOAnalyzer
 import sys
 import argparse
 import re
 from urllib.parse import quote, urlparse, urlunparse
+import json
 
 def encode_url(url):
     """URL'deki Türkçe karakterleri encode eder."""
@@ -84,9 +88,12 @@ def main():
             print("\n=== Web İçeriği Analiz Aracı ===")
             print("1. URL Analizi Yap")
             print("2. Örnek URL'leri Test Et")
-            print("3. Çıkış")
+            print("3. Sitemap Oluştur")
+            print("4. Schema.org Analizi")
+            print("5. SEO ve GEO Analizi")
+            print("6. Çıkış")
             
-            secim = input("\nSeçiminiz (1-3): ").strip()
+            secim = input("\nSeçiminiz (1-6): ").strip()
             
             if secim == "1":
                 url = input("URL giriniz (örn: https://www.example.com): ").strip()
@@ -107,10 +114,138 @@ def main():
                 for url, aciklama in ornek_urls:
                     test_yazdir(url, aciklama)
             elif secim == "3":
+                url = input("Sitemap oluşturulacak URL'yi giriniz: ").strip()
+                if not url:
+                    print("\nHata: URL boş olamaz!")
+                    continue
+                
+                if not is_valid_url(url):
+                    print("\nHata: Geçersiz URL formatı!")
+                    continue
+                
+                max_urls = input("Maximum taranacak URL sayısı (varsayılan: 100): ").strip()
+                max_urls = int(max_urls) if max_urls.isdigit() else 100
+                
+                print(f"\nSitemap oluşturuluyor... ({url})")
+                generator = SitemapGenerator()
+                sitemap = generator.create_sitemap(url, max_urls)
+                
+                if sitemap:
+                    # Sitemap'i dosyaya kaydet
+                    domain = urlparse(url).netloc
+                    filename = f"sitemap_{domain}.xml"
+                    
+                    with open(filename, "w", encoding="utf-8") as f:
+                        f.write(sitemap)
+                    
+                    print(f"\nSitemap başarıyla oluşturuldu: {filename}")
+                    print("\nİlk 500 karakter:")
+                    print("-" * 50)
+                    print(sitemap[:500])
+                    print("-" * 50)
+            elif secim == "4":
+                url = input("Schema.org analizi yapılacak URL'yi giriniz: ").strip()
+                if not url:
+                    print("\nHata: URL boş olamaz!")
+                    continue
+                
+                if not is_valid_url(url):
+                    print("\nHata: Geçersiz URL formatı!")
+                    continue
+                
+                print(f"\nSchema.org analizi yapılıyor... ({url})")
+                analyzer = SchemaAnalyzer()
+                results = analyzer.analyze_url(url)
+                
+                if results:
+                    # Sonuçları dosyaya kaydet
+                    domain = urlparse(url).netloc
+                    filename = f"schema_analysis_{domain}.json"
+                    
+                    with open(filename, "w", encoding="utf-8") as f:
+                        json.dump(results, f, indent=2, ensure_ascii=False)
+                    
+                    print(f"\nAnaliz sonuçları kaydedildi: {filename}")
+                    print("\nÖnerilen Schema.org Yapıları:")
+                    print("-" * 50)
+                    
+                    for suggestion in results['schema_suggestions']:
+                        print(f"\nTür: {suggestion['type']}")
+                        print(f"Güven Skoru: {suggestion['confidence_score']:.2f}")
+                        print("\nGerekli Alanlar:")
+                        for field in suggestion['required_fields']:
+                            print(f"- {field}")
+                        print("\nÖnerilen Alanlar:")
+                        for field in suggestion['recommended_fields']:
+                            print(f"- {field}")
+                        print("-" * 30)
+            elif secim == "5":
+                url = input("SEO ve GEO analizi yapılacak URL'yi giriniz: ").strip()
+                if not url:
+                    print("\nHata: URL boş olamaz!")
+                    continue
+                
+                if not is_valid_url(url):
+                    print("\nHata: Geçersiz URL formatı!")
+                    continue
+                
+                print(f"\nSEO ve GEO analizi yapılıyor... ({url})")
+                analyzer = SEOAnalyzer()
+                results = analyzer.analyze_url(url)
+                
+                if results:
+                    # Sonuçları dosyaya kaydet
+                    domain = urlparse(url).netloc
+                    filename = f"seo_analysis_{domain}.json"
+                    
+                    with open(filename, "w", encoding="utf-8") as f:
+                        json.dump(results, f, indent=2, ensure_ascii=False)
+                    
+                    print(f"\nAnaliz sonuçları kaydedildi: {filename}")
+                    
+                    # Meta tag sonuçları
+                    print("\nMeta Tag Analizi:")
+                    print("-" * 50)
+                    for key, value in results['meta_tags'].items():
+                        print(f"{key}: {value}")
+                    
+                    # Başlık yapısı
+                    print("\nBaşlık Yapısı:")
+                    print("-" * 50)
+                    for level, headings in results['heading_structure'].items():
+                        print(f"{level}: {len(headings)} adet")
+                    
+                    # Anahtar kelime yoğunluğu
+                    print("\nEn Sık Kullanılan Kelimeler:")
+                    print("-" * 50)
+                    for word, density in results['keyword_density'].items():
+                        print(f"{word}: %{density*100:.2f}")
+                    
+                    # İçerik kalitesi
+                    print("\nİçerik Kalitesi:")
+                    print("-" * 50)
+                    for metric, score in results['content_quality'].items():
+                        print(f"{metric}: {score:.2f}")
+                    
+                    # GEO kalıpları
+                    print("\nGEO Kalıpları:")
+                    print("-" * 50)
+                    for pattern_type, data in results['geo_patterns'].items():
+                        print(f"{pattern_type}:")
+                        print(f"- Skor: {data['score']:.2f}")
+                        print(f"- Bulunan Örnekler: {len(data['matches'])} adet")
+                    
+                    # Öneriler
+                    print("\nÖneriler:")
+                    print("-" * 50)
+                    for rec in results['recommendations']:
+                        print(f"[{rec['severity'].upper()}] {rec['type']} - {rec['element']}:")
+                        print(f"  {rec['message']}")
+            elif secim == "6":
                 print("\nProgram sonlandırılıyor...")
                 break
             else:
-                print("\nGeçersiz seçim! Lütfen 1-3 arasında bir sayı girin.")
+                print("\nGeçersiz seçim! Lütfen 1-6 arasında bir sayı girin.")
     else:
         # Komut satırı argümanları kullanılıyorsa
         args = parser.parse_args()
