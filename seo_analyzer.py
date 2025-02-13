@@ -6,13 +6,17 @@ from collections import Counter
 from urllib.parse import urlparse
 import json
 import numpy as np
+from content_analyzer import ContentAnalyzer
 
 class SEOAnalyzer:
     def __init__(self):
-        """SEO ve GEO analiz sınıfı."""
+        """SEO analiz sınıfı."""
         self.headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
         }
+        
+        # Content analyzer'ı başlat
+        self.content_analyzer = ContentAnalyzer()
         
         # SEO önemli elementler
         self.seo_elements = {
@@ -22,37 +26,6 @@ class SEOAnalyzer:
             'h3': {'selector': 'h3', 'weight': 0.4},
             'meta_description': {'selector': 'meta[name="description"]', 'weight': 0.9},
             'meta_keywords': {'selector': 'meta[name="keywords"]', 'weight': 0.7}
-        }
-        
-        # GEO kalıpları
-        self.geo_patterns = {
-            'authority': [
-                r'araştırmalar gösteriyor',
-                r'uzmanlar belirtiyor',
-                r'bilimsel veriler',
-                r'kanıtlanmış',
-                r'çalışmalar gösteriyor'
-            ],
-            'statistics': [
-                r'\d+%',
-                r'\d+ kişi',
-                r'\d+\.\d+',
-                r'\d+ (milyon|milyar)'
-            ],
-            'citations': [
-                r'kaynak:',
-                r'referans:',
-                r'alıntı:',
-                r'\[\d+\]',
-                r'\(\d{4}\)'
-            ],
-            'expert_language': [
-                r'analiz',
-                r'metodoloji',
-                r'hipotez',
-                r'sonuç olarak',
-                r'bu bağlamda'
-            ]
         }
     
     def fetch_content(self, url: str) -> Optional[str]:
@@ -142,28 +115,6 @@ class SEOAnalyzer:
         
         return meta_tags
     
-    def analyze_geo_patterns(self, text: str) -> Dict[str, Dict[str, any]]:
-        """GEO kalıplarını analiz eder."""
-        results = {}
-        
-        for pattern_type, patterns in self.geo_patterns.items():
-            matches = []
-            count = 0
-            
-            for pattern in patterns:
-                found = re.finditer(pattern, text, re.IGNORECASE)
-                for match in found:
-                    count += 1
-                    matches.append(match.group())
-            
-            results[pattern_type] = {
-                'count': count,
-                'matches': matches,
-                'score': min(count / 5, 1.0)  # Normalize score 0-1
-            }
-        
-        return results
-    
     def calculate_content_quality_score(self, text: str) -> Dict[str, float]:
         """İçerik kalitesini hesaplar."""
         # Kelime sayısı
@@ -187,6 +138,43 @@ class SEOAnalyzer:
         scores['overall_score'] = np.mean(list(scores.values()))
         
         return scores
+    
+    def analyze_url(self, url: str) -> Optional[Dict]:
+        """URL'yi analiz eder ve sonuçları döndürür."""
+        try:
+            # İçeriği çek
+            html_content = self.fetch_content(url)
+            if not html_content:
+                return None
+            
+            # BeautifulSoup ile parse et
+            soup = BeautifulSoup(html_content, 'lxml')
+            text_content = soup.get_text()
+            
+            # SEO analizlerini yap
+            results = {
+                'url': url,
+                'meta_tags': self.analyze_meta_tags(soup),
+                'heading_structure': self.analyze_heading_structure(soup),
+                'keyword_density': self.analyze_keyword_density(text_content),
+                'content_quality': self.calculate_content_quality_score(text_content),
+                
+                # İçerik analizleri
+                'readability': self.content_analyzer.analyze_readability(text_content),
+                'sentiment': self.content_analyzer.analyze_sentiment(text_content),
+                'topic_coherence': self.content_analyzer.analyze_topic_coherence(text_content),
+                'content_structure': self.content_analyzer.analyze_content_structure(text_content),
+                'content_depth': self.content_analyzer.analyze_content_depth(text_content)
+            }
+            
+            # Önerileri oluştur
+            results['recommendations'] = self.generate_seo_recommendations(results)
+            
+            return results
+            
+        except Exception as e:
+            print(f"Hata: SEO analizi yapılamadı - {str(e)}")
+            return None
     
     def generate_seo_recommendations(self, analysis_results: Dict) -> List[Dict]:
         """SEO önerileri oluşturur."""
@@ -230,56 +218,28 @@ class SEOAnalyzer:
                 'message': 'İçerik en az 500 kelime olmalıdır.'
             })
         
-        # GEO önerileri
-        geo_patterns = analysis_results['geo_patterns']
-        if geo_patterns['authority']['score'] < 0.3:
+        # Okunabilirlik önerileri
+        readability = analysis_results['readability']
+        if readability['atesmanScore'] < 50:
             recommendations.append({
-                'type': 'geo',
-                'element': 'authority',
+                'type': 'readability',
+                'element': 'text',
                 'severity': 'medium',
-                'message': 'Otorite belirten ifadeler eklenmelidir.'
+                'message': f'İçerik okunabilirliği düşük (Skor: {readability["atesmanScore"]:.1f}). ' +
+                         'Daha kısa cümleler ve daha basit kelimeler kullanın.'
             })
         
-        if geo_patterns['statistics']['score'] < 0.3:
+        # Konu tutarlılığı önerileri
+        coherence = analysis_results['topic_coherence']
+        if coherence['overall_coherence'] < 0.5:
             recommendations.append({
-                'type': 'geo',
-                'element': 'statistics',
+                'type': 'coherence',
+                'element': 'content',
                 'severity': 'medium',
-                'message': 'İstatistiksel veriler eklenmelidir.'
+                'message': 'Paragraflar arası geçişler zayıf. Konu akışını iyileştirin.'
             })
         
         return recommendations
-    
-    def analyze_url(self, url: str) -> Optional[Dict]:
-        """URL'yi analiz eder ve sonuçları döndürür."""
-        try:
-            # İçeriği çek
-            html_content = self.fetch_content(url)
-            if not html_content:
-                return None
-            
-            # BeautifulSoup ile parse et
-            soup = BeautifulSoup(html_content, 'lxml')
-            text_content = soup.get_text()
-            
-            # Analizleri yap
-            results = {
-                'url': url,
-                'meta_tags': self.analyze_meta_tags(soup),
-                'heading_structure': self.analyze_heading_structure(soup),
-                'keyword_density': self.analyze_keyword_density(text_content),
-                'content_quality': self.calculate_content_quality_score(text_content),
-                'geo_patterns': self.analyze_geo_patterns(text_content)
-            }
-            
-            # Önerileri oluştur
-            results['recommendations'] = self.generate_seo_recommendations(results)
-            
-            return results
-            
-        except Exception as e:
-            print(f"Hata: SEO analizi yapılamadı - {str(e)}")
-            return None
 
 # Örnek kullanım
 if __name__ == "__main__":
@@ -288,5 +248,5 @@ if __name__ == "__main__":
     results = analyzer.analyze_url(url)
     
     if results:
-        print("\nAnaliz Sonuçları:")
+        print("\nSEO Analiz Sonuçları:")
         print(json.dumps(results, indent=2, ensure_ascii=False)) 

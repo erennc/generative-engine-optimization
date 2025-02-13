@@ -2,11 +2,14 @@ from web_scraper import WebScraper
 from sitemap_generator import SitemapGenerator
 from schema_analyzer import SchemaAnalyzer
 from seo_analyzer import SEOAnalyzer
+from geo_analyzer import GEOAnalyzer
 import sys
 import argparse
 import re
 from urllib.parse import quote, urlparse, urlunparse
 import json
+import os
+from datetime import datetime
 
 def encode_url(url):
     """URL'deki Türkçe karakterleri encode eder."""
@@ -76,6 +79,82 @@ def test_yazdir(url, aciklama=""):
             print(f"\nHata: {sonuclar.get('error', 'Bilinmeyen hata')}")
     except Exception as e:
         print(f"\nHata: İşlem sırasında bir hata oluştu - {str(e)}")
+
+def save_analysis_results(results: dict, analysis_type: str):
+    """Analiz sonuçlarını JSON dosyasına kaydeder."""
+    # results klasörünü oluştur
+    if not os.path.exists('results'):
+        os.makedirs('results')
+    
+    # Dosya adını oluştur
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    filename = f'results/{analysis_type}_analysis_{timestamp}.json'
+    
+    # Sonuçları kaydet
+    with open(filename, 'w', encoding='utf-8') as f:
+        json.dump(results, f, indent=2, ensure_ascii=False)
+    
+    print(f"\nSonuçlar {filename} dosyasına kaydedildi.")
+
+def analyze_url():
+    """URL analizi yapar."""
+    url = input("\nAnaliz edilecek URL'yi girin: ")
+    
+    print("\nAnaliz türünü seçin:")
+    print("1. SEO Analizi")
+    print("2. GEO Analizi")
+    print("3. Her İkisi")
+    choice = input("Seçiminiz (1-3): ")
+    
+    if choice in ['1', '3']:
+        print("\nSEO analizi yapılıyor...")
+        seo_analyzer = SEOAnalyzer()
+        seo_results = seo_analyzer.analyze_url(url)
+        if seo_results:
+            print("\nSEO Analiz Sonuçları:")
+            print(json.dumps(seo_results, indent=2, ensure_ascii=False))
+            save_analysis_results(seo_results, 'seo')
+    
+    if choice in ['2', '3']:
+        print("\nGEO analizi yapılıyor...")
+        geo_analyzer = GEOAnalyzer()
+        geo_results = geo_analyzer.analyze_url(url)
+        if geo_results:
+            print("\nGEO Analiz Sonuçları:")
+            print(json.dumps(geo_results, indent=2, ensure_ascii=False))
+            save_analysis_results(geo_results, 'geo')
+
+def test_example_urls():
+    """Örnek URL'leri test eder."""
+    example_urls = [
+        "https://example.com",
+        "https://example.org",
+        "https://example.net"
+    ]
+    
+    print("\nAnaliz türünü seçin:")
+    print("1. SEO Analizi")
+    print("2. GEO Analizi")
+    print("3. Her İkisi")
+    choice = input("Seçiminiz (1-3): ")
+    
+    seo_analyzer = SEOAnalyzer() if choice in ['1', '3'] else None
+    geo_analyzer = GEOAnalyzer() if choice in ['2', '3'] else None
+    
+    for url in example_urls:
+        print(f"\n{url} analiz ediliyor...")
+        
+        if seo_analyzer:
+            print("\nSEO analizi yapılıyor...")
+            results = seo_analyzer.analyze_url(url)
+            if results:
+                save_analysis_results(results, f'seo_example_{url.split("//")[1]}')
+        
+        if geo_analyzer:
+            print("\nGEO analizi yapılıyor...")
+            results = geo_analyzer.analyze_url(url)
+            if results:
+                save_analysis_results(results, f'geo_example_{url.split("//")[1]}')
 
 def main():
     parser = argparse.ArgumentParser(description='Web içeriği analiz aracı')
@@ -180,67 +259,7 @@ def main():
                             print(f"- {field}")
                         print("-" * 30)
             elif secim == "5":
-                url = input("SEO ve GEO analizi yapılacak URL'yi giriniz: ").strip()
-                if not url:
-                    print("\nHata: URL boş olamaz!")
-                    continue
-                
-                if not is_valid_url(url):
-                    print("\nHata: Geçersiz URL formatı!")
-                    continue
-                
-                print(f"\nSEO ve GEO analizi yapılıyor... ({url})")
-                analyzer = SEOAnalyzer()
-                results = analyzer.analyze_url(url)
-                
-                if results:
-                    # Sonuçları dosyaya kaydet
-                    domain = urlparse(url).netloc
-                    filename = f"seo_analysis_{domain}.json"
-                    
-                    with open(filename, "w", encoding="utf-8") as f:
-                        json.dump(results, f, indent=2, ensure_ascii=False)
-                    
-                    print(f"\nAnaliz sonuçları kaydedildi: {filename}")
-                    
-                    # Meta tag sonuçları
-                    print("\nMeta Tag Analizi:")
-                    print("-" * 50)
-                    for key, value in results['meta_tags'].items():
-                        print(f"{key}: {value}")
-                    
-                    # Başlık yapısı
-                    print("\nBaşlık Yapısı:")
-                    print("-" * 50)
-                    for level, headings in results['heading_structure'].items():
-                        print(f"{level}: {len(headings)} adet")
-                    
-                    # Anahtar kelime yoğunluğu
-                    print("\nEn Sık Kullanılan Kelimeler:")
-                    print("-" * 50)
-                    for word, density in results['keyword_density'].items():
-                        print(f"{word}: %{density*100:.2f}")
-                    
-                    # İçerik kalitesi
-                    print("\nİçerik Kalitesi:")
-                    print("-" * 50)
-                    for metric, score in results['content_quality'].items():
-                        print(f"{metric}: {score:.2f}")
-                    
-                    # GEO kalıpları
-                    print("\nGEO Kalıpları:")
-                    print("-" * 50)
-                    for pattern_type, data in results['geo_patterns'].items():
-                        print(f"{pattern_type}:")
-                        print(f"- Skor: {data['score']:.2f}")
-                        print(f"- Bulunan Örnekler: {len(data['matches'])} adet")
-                    
-                    # Öneriler
-                    print("\nÖneriler:")
-                    print("-" * 50)
-                    for rec in results['recommendations']:
-                        print(f"[{rec['severity'].upper()}] {rec['type']} - {rec['element']}:")
-                        print(f"  {rec['message']}")
+                analyze_url()
             elif secim == "6":
                 print("\nProgram sonlandırılıyor...")
                 break
