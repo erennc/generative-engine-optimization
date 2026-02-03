@@ -4,7 +4,16 @@
   "description": "GEO CLI - Terminal'den AI görünürlük analizi",
   "keywords": ["geo", "cli", "generative-engine-optimization", "ai", "terminal"],
   "license": "MIT",
-  "author": "",
+  "author": "Eren Çöp <contact@erencop.dev>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/erennc/generative-engine-optimization",
+    "directory": "apps/cli"
+  },
+  "homepage": "https://github.com/erennc/generative-engine-optimization",
+  "bugs": {
+    "url": "https://github.com/erennc/generative-engine-optimization/issues"
+  },
   "type": "module",
   "bin": {
     "geo": "./dist/index.js"
@@ -16,9 +25,12 @@
   ],
   "scripts": {
     "build": "tsup",
-    "dev": "tsup --watch",
+    "dev": "tsup --watch", 
     "start": "node dist/index.js",
-    "lint": "tsc --noEmit",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "format": "prettier --write src/**/*.ts",
+    "type-check": "tsc --noEmit",
     "clean": "rm -rf dist"
   },
   "dependencies": {

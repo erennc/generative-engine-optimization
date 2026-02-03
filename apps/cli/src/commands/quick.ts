@@ -14,11 +14,15 @@ export function quickCommand(source: string, response: string): void {
     console.log('┌─────────────────────────────────────┐');
     console.log('│  GEO Quick Score                    │');
     console.log('├─────────────────────────────────────┤');
-    console.log(`│  Visibility: ${score.toString().padStart(3)}/100  ${createProgressBar(score, 15)}  │`);
+    console.log(
+      `│  Visibility: ${score.toString().padStart(3)}/100  ${createProgressBar(score, 15)}  │`
+    );
     console.log('└─────────────────────────────────────┘');
     console.log();
   } catch (error) {
-    console.error(`❌ Hata: ${error instanceof Error ? error.message : 'Bilinmeyen hata'}`);
+    console.error(
+      `❌ Hata: ${error instanceof Error ? error.message : 'Bilinmeyen hata'}`
+    );
     process.exit(1);
   }
 }

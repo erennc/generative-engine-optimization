@@ -4,7 +4,16 @@
   "description": "GEO (Generative Engine Optimization) core library - Zero dependency",
   "keywords": ["geo", "generative-engine-optimization", "ai", "seo", "llm", "visibility"],
   "license": "MIT",
-  "author": "",
+  "author": "Eren Çöp <contact@erencop.dev>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/erennc/generative-engine-optimization",
+    "directory": "packages/core"
+  },
+  "homepage": "https://github.com/erennc/generative-engine-optimization",
+  "bugs": {
+    "url": "https://github.com/erennc/generative-engine-optimization/issues"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -26,7 +35,10 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "lint": "tsc --noEmit",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "format": "prettier --write src/**/*.ts",
+    "type-check": "tsc --noEmit",
     "clean": "rm -rf dist coverage"
   },
   "dependencies": {},

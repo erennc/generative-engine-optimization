@@ -3,7 +3,10 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { WordCountMetric, calculateWordCountRatio } from '../metrics/word-count';
+import {
+  WordCountMetric,
+  calculateWordCountRatio,
+} from '../metrics/word-count';
 import {
   PositionAdjustedMetric,
   calculatePositionWeight,

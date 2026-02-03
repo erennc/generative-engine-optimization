@@ -151,8 +151,8 @@ export function levenshteinDistance(a: string, b: string): number {
     for (let i = 1; i <= m; i++) {
       const cost = a[i - 1] === b[j - 1] ? 0 : 1;
       curr[i] = Math.min(
-        prev[i] + 1,      // deletion
-        curr[i - 1] + 1,  // insertion
+        prev[i] + 1, // deletion
+        curr[i - 1] + 1, // insertion
         prev[i - 1] + cost // substitution
       );
     }
@@ -176,7 +176,7 @@ export function jaccardSimilarity(text1: string, text2: string): number {
   const words2 = new Set(normalizeForComparison(text2).split(/\s+/));
 
   // Kesişim
-  const intersection = new Set([...words1].filter(w => words2.has(w)));
+  const intersection = new Set([...words1].filter((w) => words2.has(w)));
 
   // Birleşim
   const union = new Set([...words1, ...words2]);
@@ -203,7 +203,7 @@ export function ngramSimilarity(text1: string, text2: string, n = 2): number {
   const set1 = new Set(ngrams1);
   const set2 = new Set(ngrams2);
 
-  const intersection = [...set1].filter(ng => set2.has(ng)).length;
+  const intersection = [...set1].filter((ng) => set2.has(ng)).length;
   const union = new Set([...set1, ...set2]).size;
 
   return intersection / union;
@@ -237,7 +237,9 @@ export function combinedSimilarity(
   const norm1 = normalizeForComparison(text1);
   const norm2 = normalizeForComparison(text2);
 
-  const levSim = 1 - levenshteinDistance(norm1, norm2) / Math.max(norm1.length, norm2.length, 1);
+  const levSim =
+    1 -
+    levenshteinDistance(norm1, norm2) / Math.max(norm1.length, norm2.length, 1);
   const jacSim = jaccardSimilarity(text1, text2);
 
   return levSim * levenshteinWeight + jacSim * (1 - levenshteinWeight);

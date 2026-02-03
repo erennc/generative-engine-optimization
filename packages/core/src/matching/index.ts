@@ -2,11 +2,7 @@
  * Matching module exports
  */
 
-export {
-  ExactMatcher,
-  containsExact,
-  findAllExactMatches,
-} from './exact';
+export { ExactMatcher, containsExact, findAllExactMatches } from './exact';
 
 export {
   FuzzyMatcher,

@@ -3,10 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import {
-  splitIntoSentences,
-  countSentences,
-} from '../utils/sentence-splitter';
+import { splitIntoSentences, countSentences } from '../utils/sentence-splitter';
 import {
   tokenize,
   countWords,

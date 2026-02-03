@@ -8,7 +8,12 @@
  * Referans: Princeton GEO Paper (arXiv:2311.09735)
  */
 
-import type { Metric, MetricResult, MatchResult, MetricOptions } from '../types';
+import type {
+  Metric,
+  MetricResult,
+  MatchResult,
+  MetricOptions,
+} from '../types';
 
 /**
  * Word Count Metric
@@ -36,6 +41,7 @@ export class WordCountMetric implements Metric {
   calculate(
     matches: MatchResult[],
     totalResponseWords: number,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _options?: MetricOptions
   ): MetricResult {
     // Toplam yanıt kelimesi yoksa 0 döndür
@@ -53,7 +59,10 @@ export class WordCountMetric implements Metric {
     }
 
     // Eşleşen kelimelerin toplamı
-    const matchedWords = matches.reduce((sum, match) => sum + match.wordCount, 0);
+    const matchedWords = matches.reduce(
+      (sum, match) => sum + match.wordCount,
+      0
+    );
 
     // Oran hesapla (0-1 arası)
     const value = matchedWords / totalResponseWords;
@@ -87,13 +96,17 @@ export class WordCountMetric implements Metric {
     lines.push(`   ${meta.matchedWords} / ${meta.totalWords} kelime eşleşti`);
 
     if (result.value >= 0.7) {
-      lines.push('   ✅ Yüksek görünürlük! Kaynak içeriğiniz iyi temsil edilmiş.');
+      lines.push(
+        '   ✅ Yüksek görünürlük! Kaynak içeriğiniz iyi temsil edilmiş.'
+      );
     } else if (result.value >= 0.4) {
       lines.push('   ⚡ Orta görünürlük. Bazı içerikler kullanılmış.');
     } else if (result.value >= 0.1) {
       lines.push('   ⚠️ Düşük görünürlük. Kaynağınız az cite edilmiş.');
     } else {
-      lines.push('   ❌ Çok düşük görünürlük. Kaynak içeriğiniz kullanılmamış.');
+      lines.push(
+        '   ❌ Çok düşük görünürlük. Kaynak içeriğiniz kullanılmamış.'
+      );
     }
 
     if (matches.length > 0) {

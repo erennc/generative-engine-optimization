@@ -55,7 +55,9 @@ export function analyzeCommand(options: AnalyzeOptions): void {
         break;
     }
   } catch (error) {
-    console.error(`❌ Hata: ${error instanceof Error ? error.message : 'Bilinmeyen hata'}`);
+    console.error(
+      `❌ Hata: ${error instanceof Error ? error.message : 'Bilinmeyen hata'}`
+    );
     process.exit(1);
   }
 }

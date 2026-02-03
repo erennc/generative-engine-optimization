@@ -106,7 +106,9 @@ export function containsExact(
   if (caseSensitive) {
     return target.includes(source);
   }
-  return normalizeForComparison(target).includes(normalizeForComparison(source));
+  return normalizeForComparison(target).includes(
+    normalizeForComparison(source)
+  );
 }
 
 /**
@@ -116,10 +118,7 @@ export function containsExact(
  * @param target - İçinde aranacak metin
  * @returns Eşleşme pozisyonları
  */
-export function findAllExactMatches(
-  source: string,
-  target: string
-): number[] {
+export function findAllExactMatches(source: string, target: string): number[] {
   const normalizedSource = normalizeForComparison(source);
   const normalizedTarget = normalizeForComparison(target);
 

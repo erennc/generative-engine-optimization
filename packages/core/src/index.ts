@@ -45,6 +45,11 @@ export {
   calculatePositionAdjustedRatio,
 } from './metrics/position-adjusted';
 
+export {
+  SemanticMetric,
+  calculateSemanticSimilarity,
+} from './metrics/semantic';
+
 // ============================================================================
 // Matching
 // ============================================================================

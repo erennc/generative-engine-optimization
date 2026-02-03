@@ -9,7 +9,12 @@
  * Referans: Princeton GEO Paper (arXiv:2311.09735)
  */
 
-import type { Metric, MetricResult, MatchResult, MetricOptions } from '../types';
+import type {
+  Metric,
+  MetricResult,
+  MatchResult,
+  MetricOptions,
+} from '../types';
 
 /** Varsayılan lambda decay değeri */
 const DEFAULT_LAMBDA_DECAY = 10;
@@ -29,7 +34,7 @@ const DEFAULT_LAMBDA_DECAY = 10;
  */
 export class PositionAdjustedMetric implements Metric {
   readonly name = 'position_adjusted';
-  readonly description = 'Konum ağırlıklı görünürlük metriği (Imp\'_wc)';
+  readonly description = "Konum ağırlıklı görünürlük metriği (Imp'_wc)";
 
   private readonly lambdaDecay: number;
 
@@ -131,16 +136,22 @@ export class PositionAdjustedMetric implements Metric {
 
     // Pozisyon analizi
     if (matches.length > 0) {
-      const earlyMatches = matches.filter(m => m.position < 3);
-      const lateMatches = matches.filter(m => m.position >= 3);
+      const earlyMatches = matches.filter((m) => m.position < 3);
+      const lateMatches = matches.filter((m) => m.position >= 3);
 
       if (earlyMatches.length > 0) {
-        lines.push(`   ✅ ${earlyMatches.length} eşleşme erken pozisyonlarda (0-2)`);
-        lines.push('      AI sistemleri erken içeriğe daha fazla ağırlık verir!');
+        lines.push(
+          `   ✅ ${earlyMatches.length} eşleşme erken pozisyonlarda (0-2)`
+        );
+        lines.push(
+          '      AI sistemleri erken içeriğe daha fazla ağırlık verir!'
+        );
       }
 
       if (lateMatches.length > 0) {
-        lines.push(`   ⚠️ ${lateMatches.length} eşleşme geç pozisyonlarda (3+)`);
+        lines.push(
+          `   ⚠️ ${lateMatches.length} eşleşme geç pozisyonlarda (3+)`
+        );
         lines.push('      Bu içerikler daha az ağırlık alıyor.');
       }
 
@@ -151,7 +162,7 @@ export class PositionAdjustedMetric implements Metric {
         );
         lines.push(
           `   🏆 En değerli eşleşme: Pozisyon ${topContributor.position} ` +
-          `(ağırlık: ${(topContributor.weight * 100).toFixed(0)}%)`
+            `(ağırlık: ${(topContributor.weight * 100).toFixed(0)}%)`
         );
       }
     }
@@ -160,7 +171,7 @@ export class PositionAdjustedMetric implements Metric {
     lines.push('');
     lines.push('   💡 Position Bias Hakkında:');
     lines.push('      AI sistemleri kaynak metinlerde erken gelen bilgilere');
-    lines.push('      daha fazla önem verir. Bu metrik bu bias\'ı ölçer.');
+    lines.push("      daha fazla önem verir. Bu metrik bu bias'ı ölçer.");
 
     return lines.join('\n');
   }

@@ -191,12 +191,12 @@ export interface Insight {
 }
 
 export type InsightType =
-  | 'position_bias'      // Erken pozisyon avantajı
-  | 'high_visibility'    // Yüksek görünürlük
-  | 'low_visibility'     // Düşük görünürlük
-  | 'exact_match'        // Birebir alıntı
-  | 'partial_match'      // Kısmi eşleşme
-  | 'no_match';          // Eşleşme yok
+  | 'position_bias' // Erken pozisyon avantajı
+  | 'high_visibility' // Yüksek görünürlük
+  | 'low_visibility' // Düşük görünürlük
+  | 'exact_match' // Birebir alıntı
+  | 'partial_match' // Kısmi eşleşme
+  | 'no_match'; // Eşleşme yok
 
 // ============================================================================
 // Matcher Interface

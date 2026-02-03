@@ -27,8 +27,8 @@ export function tokenize(text: string): string[] {
 
   return text
     .split(NON_WORD_PATTERN)
-    .map(word => word.trim())
-    .filter(word => word.length > 0);
+    .map((word) => word.trim())
+    .filter((word) => word.length > 0);
 }
 
 /**
@@ -50,7 +50,7 @@ export function countWords(text: string): number {
  */
 export function countUniqueWords(text: string, caseSensitive = false): number {
   const words = tokenize(text);
-  const normalized = caseSensitive ? words : words.map(w => w.toLowerCase());
+  const normalized = caseSensitive ? words : words.map((w) => w.toLowerCase());
   return new Set(normalized).size;
 }
 

@@ -60,7 +60,9 @@ export function compareCommand(options: CompareOptions): void {
         break;
     }
   } catch (error) {
-    console.error(`❌ Hata: ${error instanceof Error ? error.message : 'Bilinmeyen hata'}`);
+    console.error(
+      `❌ Hata: ${error instanceof Error ? error.message : 'Bilinmeyen hata'}`
+    );
     process.exit(1);
   }
 }

@@ -8,12 +8,59 @@
 // Yaygın kısaltmalar (Türkçe ve İngilizce)
 const ABBREVIATIONS = new Set([
   // İngilizce
-  'mr', 'mrs', 'ms', 'dr', 'prof', 'sr', 'jr', 'vs', 'etc', 'inc', 'ltd', 'co',
-  'corp', 'st', 'ave', 'blvd', 'dept', 'est', 'fig', 'govt', 'no', 'vol',
+  'mr',
+  'mrs',
+  'ms',
+  'dr',
+  'prof',
+  'sr',
+  'jr',
+  'vs',
+  'etc',
+  'inc',
+  'ltd',
+  'co',
+  'corp',
+  'st',
+  'ave',
+  'blvd',
+  'dept',
+  'est',
+  'fig',
+  'govt',
+  'no',
+  'vol',
   // Türkçe
-  'dr', 'prof', 'doç', 'yrd', 'öğr', 'gör', 'av', 'muh', 'müh', 'arş',
-  'cad', 'sok', 'mah', 'apt', 'kat', 'no', 'tel', 'fax', 'pk', 'tr',
-  'vb', 'vd', 'vs', 'bkz', 'çev', 'ed', 'yay', 'cilt', 'sayı', 's',
+  'dr',
+  'prof',
+  'doç',
+  'yrd',
+  'öğr',
+  'gör',
+  'av',
+  'muh',
+  'müh',
+  'arş',
+  'cad',
+  'sok',
+  'mah',
+  'apt',
+  'kat',
+  'no',
+  'tel',
+  'fax',
+  'pk',
+  'tr',
+  'vb',
+  'vd',
+  'vs',
+  'bkz',
+  'çev',
+  'ed',
+  'yay',
+  'cilt',
+  'sayı',
+  's',
 ]);
 
 // Sayı + nokta pattern'i (örn: "3.14", "1.", "2.")
@@ -55,7 +102,8 @@ export function splitIntoSentences(text: string): string[] {
       // Sonraki karakter boşluk veya metin sonu mu kontrol et
       const nextChar = trimmed[i + 1];
       const isEndOfText = i === trimmed.length - 1;
-      const isFollowedBySpace = nextChar === ' ' || nextChar === '\n' || nextChar === '\t';
+      const isFollowedBySpace =
+        nextChar === ' ' || nextChar === '\n' || nextChar === '\t';
       const isFollowedByUppercase = nextChar && /[A-ZÇĞİÖŞÜА-Я]/.test(nextChar);
 
       if (char === '.' && !isEndOfText) {
@@ -130,5 +178,7 @@ export function countSentences(text: string): number {
  */
 export function splitIntoParagraphsAndSentences(text: string): string[][] {
   const paragraphs = text.split(/\n\n+/);
-  return paragraphs.map(p => splitIntoSentences(p)).filter(p => p.length > 0);
+  return paragraphs
+    .map((p) => splitIntoSentences(p))
+    .filter((p) => p.length > 0);
 }
